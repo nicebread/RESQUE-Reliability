@@ -8,6 +8,15 @@ In Study 1, many of our participants were early career researchers currently (or
 
 For Study 2, all primary data is available (see `raw_data/Study2`).
 
+## Materials
+
+You can find the full material in `material`, which includes the rating sheets and other questionnaires.
+**Please note that the rating scheme has evolved since this study. We discourage to use the old schemes from this repository. Rather go to the [RESQUE website](https://nicebread.github.io/RESQUE/) and use the updated rating scheme.**
+
+## Preregistration
+
+Study 2 was [preregistered](preregistration/Preregistration Study 2.pdf).
+
 ## How to reproduce
 
 We share the full analysis scripts, but only results for Study 2 are reproducible.
