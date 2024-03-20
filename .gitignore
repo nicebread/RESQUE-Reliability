@@ -1,3 +1,5 @@
+.vscode
+
 # for data protection, don't sync sensitive data files from Study 1
 
 raw_data/all_dois.RData
