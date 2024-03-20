@@ -1,12 +1,10 @@
 # for data protection, don't sync sensitive data files from Study 1
 
 raw_data/all_dois.RData
-raw_data/Study1/*.csv
 raw_data/Study1/*.xlsx
 raw_data/Study1/*.RData
 raw_data/traditional*
 processed_data/indexes.csv
 processed_data/papers.RDS
 processed_data/results.RDS
-processed_data/traditional_metrics_R1_2.xlsx
 processed_data/S1.csv

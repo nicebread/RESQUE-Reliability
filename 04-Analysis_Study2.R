@@ -1,5 +1,6 @@
-#1 set working directory
-#2 needed packages
+# Analysis script by Anna Seyffert
+# This script computes ICCs for all indicators and the overall relative rigor score (RRS) in Study 2
+
 library(rio)
 library(tidyverse)
 library(psych)

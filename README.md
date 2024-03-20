@@ -30,8 +30,15 @@ install.packages(c("openalexR", "dplyr", "rio", "ggplot2", "stringr", "DescTools
   - This script loads DOIs from two studies, fetches corresponding papers from OpenAlex, calculates the Journal Impact Factor (JIF) and h-index for each paper, and computes Field Normalized Citation Ratio (FNCR) and Field Normalized Paper Ratio (FNPR) for each paper.
   - You could rerun the script for Study 2, but you will get different h-indexes. For reproduction of our results, rather run `04-Analysis_Study2.R` which accesses an intermediate data file.
 - 02-Consolidate_files.R
-  - 
+  - This script combines multiple data sources: The h-indexes, FNCS etc. retrieved from OpenAlex, the manual h-indexes from Scopus, and more.
 - 03-Analysis_Study1.R
+  - This script computes Kappa and ICCs for all indicators and the overall relative rigor score (RRS) in Study 1
+  - Without the data from Study 1, this script is NOT reproducible.
 - 04-Analysis_Study2.R
+  - This script computes ICCs for all indicators and the overall relative rigor score (RRS) in Study 2
+  - This script IS reproducible.
 - 05-Exploratory_analysis.R
+  - This script computes correlations between the Relative Rigor Score (RRS) and traditional metrics (h-index, citation rate, FNCS, JIF, publication age, academic age of first author)
+  - The analyses for Study 2 (lines 60-110) are reproducible.
 
+To summarize, to reproduce our results for Study 2, run the script `04-Analysis_Study2.R` and the second half of script `05-Exploratory_analysis.R`.

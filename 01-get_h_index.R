@@ -1,3 +1,4 @@
+# Script by Felix Schönbrodt
 # This script loads DOIs from two studies, fetches corresponding papers from OpenAlex, calculates the Journal Impact Factor (JIF) and h-index for each paper, and computes Field Normalized Citation Ratio (FNCR) and Field Normalized Paper Ratio (FNPR) for each paper. The script then exports the results.
 
 # Note: Without the data from Study 1, this script is NOT reproducible.

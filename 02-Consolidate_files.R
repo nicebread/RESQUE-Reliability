@@ -1,6 +1,12 @@
+# Script by Felix Schönbrodt
+# This script combines multiple data sources: The h-indexes, FNCS etc. retrieved from OpenAlex, the manual h-indexes from Scopus, and more.
+
+# Note: Without the data from Study 1, this script is NOT reproducible.
+
 library(rio)
 library(dplyr)
 library(stringr)
+library(ggplot2)
 
 # load all dois from both studies
 load(file="raw_data/all_dois.RData")
@@ -34,16 +40,13 @@ ICC_dat <- dat1 %>%
 # How many ratings are identical?
 table(ICC_dat$h_index_first_au_SCOPUS.R1 == ICC_dat$h_index_first_au_SCOPUS.R2)
 
+# Which ratings differ? --> need to be consolidated in a discussion.
+# The consensus ratings are stored in file `raw_data/traditional_metrics_R1_R2.xlsx` (not shared due to privacy reasons)
 diff <- which(ICC_dat$h_index_first_au_SCOPUS.R1 != ICC_dat$h_index_first_au_SCOPUS.R2)
 ICC_dat[diff, c("h_index_first_au_SCOPUS.R1", "h_index_first_au_SCOPUS.R2")]
 
+# compute the ICC (before consensus rating)
 ICC(ICC_dat[, c("h_index_first_au_SCOPUS.R1", "h_index_first_au_SCOPUS.R2")])
-
-export(dat1, file="processed_data/traditional_metrics_R1_2.xlsx")
-
-# How good are the automatic OpenAlex h-indexes? r = .97
-cor.test(ICC_dat$h_index_first_au, ICC_dat$h_index_first_au_SCOPUS.R1, use="p")
-plot(ICC_dat$h_index_first_au, ICC_dat$h_index_first_au_SCOPUS.R1)
 
 
 #-----------------------------------
@@ -53,6 +56,20 @@ plot(ICC_dat$h_index_first_au, ICC_dat$h_index_first_au_SCOPUS.R1)
 # load the consolidated h-index
 dat <- import("raw_data/traditional_metrics_R1_R2.xlsx")
 
+# How good are the automatic OpenAlex h-indexes? r = .98
+# First, reduce data set to unique authors (as some authors are in the data set multiple times)
+dat_unique <- dat %>% 
+    select(first_au_id, h_index_first_au, h_index_first_au_SCOPUS) %>% 
+    distinct()
+
+export(dat_unique, file="processed_data/h_index_comparison.csv")
+
+c1 <- cor.test(dat_unique$h_index_first_au, dat_unique$h_index_first_au_SCOPUS, use="p")
+c1
+
+ggplot(dat_unique, aes(h_index_first_au, h_index_first_au_SCOPUS)) + geom_point() + geom_smooth(method=lm) + xlab("h-index OpenAlex")+ ylab("h-index Scopus") + ggtitle(paste0("Correlation: r = ", c1$estimate |> round(2)))
+
+
 dat$year_of_phd_first <- as.numeric(dat$year_of_phd_first)
 
 dat$is_MR_eligible <- dat$is_MR_eligible == 1
@@ -61,7 +78,7 @@ dat$is_MR_eligible[is.na(dat$is_MR_eligible)] <- FALSE
 dat$type <- factor(dat$type == 1, levels=c(TRUE, FALSE), labels=c("empirical", "theoretical"))
 
 
-# read indexes (h-index etc.) from all papers
+# read indexes (h-index, FNCS etc.) from all papers
 dat2 <- readRDS(file="processed_data/results.RDS")
 
 indexes <- left_join(
@@ -75,20 +92,18 @@ table(S1=indexes$is_S1, S2=indexes$is_S2, useNA="always")
 
 table(eligible = indexes[indexes$is_S2, ]$is_MR_eligible, indexes[indexes$is_S2, ]$type, useNA="always")
 
-indexes$doi[indexes$is_S2 & is.na(indexes$type)]
-
-# which papers are neither assigned to S1 or S2? None!
+# Plausibility check: Which papers are neither assigned to S1 or S2? None!
 indexes[!indexes$is_S1 & !indexes$is_S2, "doi"]
 
 #-----------------------------------
-# get BIP
+# get BIP citation metrics (not reported in paper)
 #-----------------------------------
 
 BIP <- get_BIP(indexes$doi)
 indexes <- cbind(indexes, BIP[, c("attrank", "pagerank")])
 
 #-----------------------------------
-# Get RRS from both studies
+# Get Relative Rigor Score (RRS) from both studies
 #-----------------------------------
 
 # the res.RData from Study 1 already contains the consensus ratings (so it's only a single rater)

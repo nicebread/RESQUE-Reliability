@@ -1,3 +1,4 @@
+# Script by Felix Schönbrodt
 # This downloads a reference set for the field and age normalized citation score
 # We use the concept ID for "Psychology"
 

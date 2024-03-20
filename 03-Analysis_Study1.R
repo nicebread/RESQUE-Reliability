@@ -1,3 +1,5 @@
+# Analysis script by Franka Etzel and Felix Schönbrodt
+
 # This file contains all analyses from Study 1. Due to anonymity reasons, the
 # scientific publications we received and the associated data sets cannot be published. 
 # (Many of our participants were early career researchers currently (or soon) on the job market. 
