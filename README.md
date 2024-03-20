@@ -15,7 +15,7 @@ You can find the full material in `material`, which includes the rating sheets a
 
 ## Preregistration
 
-Study 2 was [preregistered](preregistration/Preregistration\ Study\ 2.pdf).
+Study 2 was [preregistered](preregistration/Preregistration%20Study%202.pdf).
 
 ## How to reproduce
 
