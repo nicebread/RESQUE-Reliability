@@ -1,0 +1,37 @@
+This repository contains the full code and partial raw data for the paper "Inter-Rater Reliability in Assessing the Methodological Quality
+of Research Papers in Psychology" by Franka Etzel, Anna Seyffert-Müller, Felix D. Schönbrodt, 
+Lucie Kreuzer, Anne Gärtner, Paula Knischewski & Daniel Leising.
+
+## Data availability
+
+In Study 1, many of our participants were early career researchers currently (or soon) on the job market. We asked them to nominate their three best papers.We promised not to share individual data in order to increase the response rate and to remove potential risks for their application processes. We have seen no way of properly anonymizing the data, as the doi always leads tot the first author, and also data like the h-index (in combination with the JIF of a journal) could be used to re-identify participants. Therefore the results of study 1 are not reproducible, but we share the full script to understand the steps taken in the analysis. 
+
+For Study 2, all primary data is available (see `raw_data/Study2`).
+
+## How to reproduce
+
+We share the full analysis scripts, but only results for Study 2 are reproducible.
+In theory you need to run all `.R` files in the top folder in their numbered order.
+
+### Install all necessary packages
+
+```R 
+install.packages("remotes")
+remotes::install_github("nicebread/OAmetrics")
+install.packages(c("openalexR", "dplyr", "rio", "ggplot2", "stringr", "DescTools", "psych", "openxlsx", "tidyr", "tidyverse", "irr", "psy", "Rfast", "Hmisc", "flextable", "officer", "scipub", "robustbase"))
+```
+
+### Run the scripts
+
+- 00-get_reference_set.R
+  - This small scripts downloads a reference set (for field and age normalized citation score). This takes a few hours; the resulting download for calculations is stored in `processed_data/c_counts_psy_2001_2023.RDS`.
+  - You could rerun this file, but this will change the results. We recommend to use our intermediate files.
+- 01-get_h_index.R
+  - This script loads DOIs from two studies, fetches corresponding papers from OpenAlex, calculates the Journal Impact Factor (JIF) and h-index for each paper, and computes Field Normalized Citation Ratio (FNCR) and Field Normalized Paper Ratio (FNPR) for each paper.
+  - You could rerun the script for Study 2, but you will get different h-indexes. For reproduction of our results, rather run `04-Analysis_Study2.R` which accesses an intermediate data file.
+- 02-Consolidate_files.R
+  - 
+- 03-Analysis_Study1.R
+- 04-Analysis_Study2.R
+- 05-Exploratory_analysis.R
+
