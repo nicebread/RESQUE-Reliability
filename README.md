@@ -1,6 +1,6 @@
-This repository contains the full code and partial raw data for the paper "Inter-Rater Reliability in Assessing the Methodological Quality
-of Research Papers in Psychology" by Franka Etzel, Anna Seyffert-Müller, Felix D. Schönbrodt, 
-Lucie Kreuzer, Anne Gärtner, Paula Knischewski & Daniel Leising.
+# "Inter-Rater Reliability in Assessing the Methodological Quality of Research Papers in Psychology"
+
+This repository contains the full code and partial raw data for the paper "Inter-Rater Reliability in Assessing the Methodological Quality of Research Papers in Psychology" by Franka Etzel, Anna Seyffert-Müller, Felix D. Schönbrodt, Lucie Kreuzer, Anne Gärtner, Paula Knischewski & Daniel Leising.
 
 ## Data availability
 
