@@ -3,7 +3,6 @@
 
 # Note: Without the data from Study 1, this script is NOT reproducible.
 
-
 library(OAmetrics)
 library(openalexR)
 library(dplyr)

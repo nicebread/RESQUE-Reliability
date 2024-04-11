@@ -7,6 +7,7 @@ library(rio)
 library(dplyr)
 library(stringr)
 library(ggplot2)
+library(OAmetrics)
 
 # load all dois from both studies
 load(file="raw_data/all_dois.RData")
@@ -62,7 +63,8 @@ dat_unique <- dat %>%
     select(first_au_id, h_index_first_au, h_index_first_au_SCOPUS) %>% 
     distinct()
 
-export(dat_unique, file="processed_data/h_index_comparison.csv")
+# for reprodiucibility of this analysis: Export an anonymous version
+export(dat_unique %>% select(-first_au_id), file="processed_data/h_index_comparison.csv")
 
 c1 <- cor.test(dat_unique$h_index_first_au, dat_unique$h_index_first_au_SCOPUS, use="p")
 c1
