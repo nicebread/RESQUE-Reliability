@@ -54,7 +54,7 @@ data$R002[data$R002 == -1] <- NA
 data$R006b[data$R006b == -1] <- NA
 data$paper <- coalesce(data$R002, data$R006b)
 
-#save(data, file="processed_data/S2_data.Rdata")
+save(data, file="processed_data/S2_data.Rdata")
 
 
 #9 bring into needed format for analyses
@@ -290,6 +290,10 @@ data_long_a$R006[data_long_a$R006 == -1] <- NA
 data_long_a$paper <- coalesce(data_long_a$R002, data_long_a$R006)
 data_long_a <- data_long_a %>% select(-R002, -R006)
 
+# merge the information of MR_eligible
+S2 <- import(file="processed_data/S2.csv")
+data_long_b <- merge(data_long_a, S2 %>% select(paper_number, is_MR_eligible), by.x="paper", by.y="paper_number")
+
 #19 quantiles of part 2 of the sample
 data_long_a$value <- as.numeric(data_long_a$value)
 quantiles_a <- data_long_a %>%
@@ -305,10 +309,42 @@ quantiles_a[,2:4] <- round(quantiles_a[,2:4], 2)
 quantiles_a
 
 #20 frequency of "3" for all criteria in random sample
-frequency_a <- data_long_a %>% group_by(criterion) %>% filter(value == 3)%>% arrange(criterion) 
-frequency_b <- table(frequency_a$criterion)
-frequency_b <- (frequency_b/90)*100
-round(frequency_b, 2)
+frequency <- data_long_b %>% 
+  arrange(criterion) %>% 
+  group_by(criterion) %>% 
+  summarise(
+    three = sum(value == 3, na.rm=TRUE)/sum(!is.na(value)) * 100
+  )
+  
+frequency$three <- round(frequency$three, 1)
+print(frequency, n=100)
+
+# without criterion 0 (“Published in peer reviewed journal”)
+mean(frequency$three[-1])
+sd(frequency$three[-1])
+range(frequency$three[-1])
+
+# How many of the 30 papers are MR_eligible? 22
+ data_long_b %>% 
+  filter(is_MR_eligible == TRUE) %>% 
+  pull(paper) |> unique() |> length()
+
+frequency_eligible <- data_long_b %>% 
+  filter(is_MR_eligible == TRUE) %>% 
+  arrange(criterion) %>% 
+  group_by(criterion) %>% 
+  summarise(
+    three_eligible = sum(value == 3, na.rm=TRUE)/sum(!is.na(value)) * 100
+  )
+  
+frequency_eligible$three_eligible <- round(frequency_eligible$three_eligible, 1)
+print(frequency_eligible, n=100)
+
+mean(frequency_eligible$three_eligible[-1])
+sd(frequency_eligible$three_eligible[-1])
+range(frequency_eligible$three_eligible[-1])
+
+usage <- inner_join(frequency, frequency_eligible, by="criterion")
 
 #21 compute ICC of part 2 of the sample
 res2 <- data.frame()

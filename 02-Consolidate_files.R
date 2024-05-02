@@ -14,6 +14,7 @@ load(file="raw_data/all_dois.RData")
 load("raw_data/Study1/Study1_res.Rdata")
 
 dois_Study2 <- import("raw_data/Study2/doi_paper_number_normalized.xlsx")
+colnames(dois_Study2)[1] <- "paper"
 
 dat1 <- import("raw_data/traditional_metrics_R1.xlsx")
 dat2 <- import("raw_data/traditional_metrics_R2.xlsx")
@@ -112,7 +113,7 @@ S1 <- subset(res, ID == 'rel_points')
 S1$RRS <- as.numeric(S1$value)
 
 # Study 2
-load(file="raw_data/Study2/data.Rdata")
+load(file="processed_data/S2_data.Rdata")
 S2_long <- data
 
 # average the three ratings per paper:
@@ -123,10 +124,10 @@ S2 <- S2_long %>%
     arrange(paper)
 hist(S2$RRS)
 
-S2$doi <- dois_Study2$doi
+S2 <- merge(S2, dois_Study2 %>% select(paper, doi), by="paper")
 
 S1 <- merge(S1 %>% select(doi, RRS), indexes, by="doi")
-S2 <- merge(S2 %>% select(doi, RRS), indexes, by="doi")
+S2 <- merge(S2 %>% select(doi, paper_number = paper, RRS), indexes, by="doi")
 
 export(indexes, file="processed_data/indexes.csv")
 export(S1, file="processed_data/S1.csv")
