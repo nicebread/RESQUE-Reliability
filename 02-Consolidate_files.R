@@ -74,10 +74,10 @@ ggplot(dat_unique, aes(h_index_first_au, h_index_first_au_SCOPUS)) + geom_point(
 
 dat$year_of_phd_first <- as.numeric(dat$year_of_phd_first)
 
+# For S2:
 dat$is_MR_eligible <- dat$is_MR_eligible == 1
 dat$is_MR_eligible[is.na(dat$is_MR_eligible)] <- FALSE
-
-dat$type <- factor(dat$type == 1, levels=c(TRUE, FALSE), labels=c("empirical", "theoretical"))
+table(dat$is_MR_eligible)
 
 
 # read indexes (h-index, FNCS etc.) from all papers
@@ -85,14 +85,13 @@ dat2 <- readRDS(file="processed_data/results.RDS")
 
 indexes <- left_join(
     dat2 %>% select(1:10, 22, 23), 
-    dat %>% select(doi, year_of_phd_first, is_MR_eligible, type, h_index_first_au_SCOPUS), by="doi")
+    dat %>% select(doi, year_of_phd_first, is_MR_eligible, h_index_first_au_SCOPUS), by="doi")
 
 indexes$is_S1 <- indexes$doi %in% unique(res$doi)
 indexes$is_S2 <- indexes$doi %in% dois_Study2$doi
 
+# One paper is both in S1 and S2
 table(S1=indexes$is_S1, S2=indexes$is_S2, useNA="always")
-
-table(eligible = indexes[indexes$is_S2, ]$is_MR_eligible, indexes[indexes$is_S2, ]$type, useNA="always")
 
 # Plausibility check: Which papers are neither assigned to S1 or S2? None!
 indexes[!indexes$is_S1 & !indexes$is_S2, "doi"]

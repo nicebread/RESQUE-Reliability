@@ -15,6 +15,11 @@ library(dplyr)
 data0 <- import("raw_data/Study2/Data_Study_2.xlsx")
 # define NAs (-1 <- option 'unclear')
 rating_vars <- c("R003_01", "R003_02", "R003_03", "R003_04", "R003_05", "R003_06", "R003_07", "R003_08", "R003_09", "R003_10", "R003_11", "R003_12", "R003_13", "R003_14", "R003_15", "R003_16", "R003_17", "R003_18", "R003_19", "R003_20", "R003_21", "R003_22", "R003_23", "R003_24", "R003_25","R003_26","R003_27","R003_28", "R003_29", "R003_30", "R003_31", "R003_32", "R003_33", "R003_34", "R003_35", "R003_36", "R003_37", "R003_38")
+
+consensus_vars <- c("R003_01", "R003_02", "R003_03", "R003_04", "R003_05", "R003_06", "R003_07", "R003_08", "R003_09", "R003_10", "R003_11", "R003_12", "R003_35", "R003_36", "R003_37")
+
+MR_vars <- c("R003_13", "R003_14", "R003_15", "R003_16", "R003_17", "R003_18", "R003_19", "R003_20", "R003_21", "R003_22", "R003_23", "R003_24", "R003_25", "R003_26", "R003_27", "R003_28", "R003_29", "R003_30", "R003_31", "R003_32", "R003_33", "R003_34")
+
 data0[, rating_vars][data0[, rating_vars] == -1] <- NA
 #4 select needed variables
 data <- data0 %>% select(R001, R002, R006, starts_with("R003_"))
@@ -26,17 +31,17 @@ data <- data[-c(1, 119, 140, 184, 186, 194, 200, 248, 271, 272),]
 data <- as.data.frame(apply(data, 2, as.numeric))
 
 #7 calculate sums and mean for consensus criteria for each rating
-data$sum_consensus <- rowSums(data %>% select(R003_01, R003_02, R003_03, R003_04, R003_05, R003_06, R003_07, R003_08, R003_09, R003_10, R003_11, R003_12, R003_35, R003_36, R003_37), na.rm=T)
-data$mean_consensus <- rowMeans(data %>% select(R003_01, R003_02, R003_03, R003_04, R003_05, R003_06, R003_07, R003_08, R003_09, R003_10, R003_11, R003_12, R003_35, R003_36, R003_37), na.rm=T)
+data$sum_consensus <- rowSums(data %>% select(all_of(consensus_vars)), na.rm=T)
+data$mean_consensus <- rowMeans(data %>% select(all_of(consensus_vars)), na.rm=T)
 
 #8a calculate sums and mean for criteria of methodological rigor
-data$sum_methods <- rowSums(data %>% select(R003_13, R003_14, R003_15, R003_16, R003_17, R003_18, R003_19, R003_20, R003_21, R003_22, R003_23, R003_24, R003_25, R003_26, R003_27, R003_28, R003_29, R003_30, R003_31, R003_32, R003_33, R003_34), na.rm=T)
-data$mean_methods <- rowMeans(data %>% select(R003_13, R003_14, R003_15, R003_16, R003_17, R003_18, R003_19, R003_20, R003_21, R003_22, R003_23, R003_24, R003_25, R003_26, R003_27, R003_28, R003_29, R003_30, R003_31, R003_32, R003_33, R003_34), na.rm=T)
+data$sum_methods <- rowSums(data %>% select(all_of(MR_vars)), na.rm=T)
+data$mean_methods <- rowMeans(data %>% select(all_of(MR_vars)), na.rm=T)
 
 #8b: Compute relative rigor score RRS
 
 # compute the maximally attainable score: each indicator has a maximum of 3 points. If it's NA, it is removed from the max score.
-data2 <- data %>% select(R003_13, R003_14, R003_15, R003_16, R003_17, R003_18, R003_19, R003_20, R003_21, R003_22, R003_23, R003_24, R003_25, R003_26, R003_27, R003_28, R003_29, R003_30, R003_31, R003_32, R003_33, R003_34)
+data2 <- data %>% select(all_of(MR_vars))
 
 data$max_methods_score <- apply(data2, 1, function(x) sum(!is.na(x))*3)
 
@@ -49,8 +54,7 @@ data$R002[data$R002 == -1] <- NA
 data$R006b[data$R006b == -1] <- NA
 data$paper <- coalesce(data$R002, data$R006b)
 
-save(data, file="raw_data/Study2/data.Rdata")
-
+#save(data, file="processed_data/S2_data.Rdata")
 
 
 #9 bring into needed format for analyses
@@ -107,11 +111,9 @@ data_long$R006[data_long$R006 == -1] <- NA
 data_long$paper <- coalesce(data_long$R002, data_long$R006)
 data_long <- data_long %>% select(-R002, -R006)
 
-save(data_long, file="raw_data/Study2/data_long.Rdata")
-
 res1 <- data.frame()
 
-#MAIN ANAYLSIS
+#MAIN ANALYSIS
 #11 compute ICC
 for (i in unique(data_long$criterion)) {
   print(i)
@@ -139,7 +141,7 @@ res1$ICC_1_3_CI_Lower <- ((3*res1[,3])/(1+(3-1)*res1[,3]))
 res1$ICC_1_3_CI_Upper <- ((3*res1[,4])/(1+(3-1)*res1[,4]))
 res1
 
-#13 mean, SD, minimum, maximum for methodological criteria 
+#13 mean, SD, minimum, maximum of ICC for methodological criteria 
 method_mean_1_1 <- mean(res1[14:35,2])
 SD_1_1 <- sd(res1[14:35,2])
 Min_1_1 <- min(res1[14:35,2])
@@ -153,7 +155,7 @@ method_mean <- data.frame(method_mean_1_1, SD_1_1, Min_1_1, Max_1_1, method_mean
 method_mean <- round(method_mean, 2)
 method_mean
 
-#14 mean, SD, minimum, maximum for consensus criteria 
+#14 mean, SD, minimum, maximum of ICC for consensus criteria 
 consensus_mean_1_1 <- mean(res1[c(2:13, 36:38),2])
 C_SD_1_1 <- sd(res1[c(2:13, 36:38),2])
 C_Min_1_1 <- min(res1[c(2:13, 36:38),2])
@@ -233,7 +235,7 @@ corr_matrix_r <- as.matrix(corr_matrix$r)[1:38, 1:38]
 diag(corr_matrix_r) <- res1[1:38,5]
 
 #18 preparation for exploratory analysis of ICC only for articles with no further selection
-data1 <- import("raw_data/Study2/Data_Study_2_exploratory_1.xlsx")
+data1 <- import("raw_data/Study2/Data_Study_2_exploratory.xlsx")
 data1[, rating_vars][data1[, rating_vars] == -1] <- NA
 data1 <- data1[-1,]
 data_a <- data1 %>% select(R001, R002, R006, starts_with("R003_"))
@@ -380,3 +382,4 @@ data_time %>% count(R001)
 res1[,2:8] <- round(res1[, 2:8],2)
 res1
 
+# TODO: Compute ICC for "Overall Score of Methodology Criteria", but only for the 89 eligible papers.
