@@ -14,6 +14,7 @@ library(dplyr)
 library(DescTools)
 library(openxlsx)
 library(tidyr)
+library(ggplot2)
 
 # load data
 load(file = "raw_data/Study1/Study1_res.Rdata") # final ratings of papers (agreed upon by consensus)
@@ -71,7 +72,7 @@ for (target in targets) {
 
 # Create table for IRR and variances of all indicators
 table_complete <- data.frame(kappa_results) 
-table_complete <- transpose(table_complete)
+table_complete <- data.table::transpose(table_complete)
 row.names(table_complete) <- targets
 table_complete$V4 <- as.numeric(vars)
 
