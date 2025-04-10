@@ -10,6 +10,30 @@ library(Rfast)
 library(Hmisc)
 library(psych)
 library(dplyr)
+library(gtools)
+library(officer)
+library(flextable)
+
+# format a number as a correlation (no leading zero, exactly two decimal places)
+# Note: numeric values need to be turned into characters
+format_corr <- function(x) {
+  # First, format each element with exactly 2 decimal places
+  formatted <- sprintf("%.2f", x)
+  
+  # Remove the leading zero using a regex that handles negative numbers as well
+  formatted <- sub("^(-?)0", "\\1", formatted)
+  
+  # If x is a matrix, preserve its dimensions and names
+  if (is.matrix(x)) {
+    dim(formatted) <- dim(x)
+    rownames(formatted) <- rownames(x)
+    colnames(formatted) <- colnames(x)
+  }
+  
+  formatted
+}
+
+
 
 #3 import data
 data0 <- import("raw_data/Study2/Data_Study_2.xlsx")
@@ -232,7 +256,23 @@ data_corr <- rename(data_corr,
 data_corr <- as.matrix(data_corr)
 corr_matrix <- rcorr(data_corr, type = "pearson")
 corr_matrix_r <- as.matrix(corr_matrix$r)[1:38, 1:38]
+
+# The diagonal contains Krippendorff's alpha
 diag(corr_matrix_r) <- res1[1:38,5]
+corr_matrix_r_formatted <- corr_matrix_r %>% 
+  round(2) %>% format_corr() %>% 
+  as.data.frame() %>% 
+  rownames_to_column("Criterion")
+corr_matrix_r_formatted[upper.tri(corr_matrix_r_formatted)] <- ""
+
+corr_matrix_r.tab <- corr_matrix_r_formatted  %>% as.data.frame() %>%
+   regulartable() %>% autofit()
+corr_matrix_r.tab
+
+export(corr_matrix_r %>% 
+  round(3) %>% as.data.frame() %>% 
+  rownames_to_column("Criterion"), 
+  "processed_data/S2_indicator_correlations.csv")
 
 #18 preparation for exploratory analysis of ICC only for articles with no further selection
 data1 <- import("raw_data/Study2/Data_Study_2_exploratory.xlsx")
@@ -345,6 +385,64 @@ sd(frequency_eligible$three_eligible[-1])
 range(frequency_eligible$three_eligible[-1])
 
 usage <- inner_join(frequency, frequency_eligible, by="criterion")
+
+# in the revision, we restructured the single "Usage" column into 
+# its own table with more detailed information.
+# We do this both for all 30 papers, and for the 22 eligible papers.
+
+# Alternative 1: We summarized the 3 ratings per criterion per paper to obtain an average rating. If the mean value of the rating was >= 2.33, we concluded that a paper has a certain quality property. Values >= 2.33 can be obtained if at least two of the three raters raters chose „does apply“, or one chose „does apply“ and two „does partially apply“. We then computed the percentage of papers that showed a property.
+# Alternative 2: We concluded that a paper has a certain quality property if all raters rated at least with "does partially apply".
+frequency2 <- data_long_b %>% 
+  mutate(
+    value_num = as.numeric(value),
+    value_num_eligible = ifelse(is_MR_eligible, as.numeric(value), NA)
+  ) %>% 
+  arrange(criterion) %>% 
+  group_by(paper, criterion) %>% 
+  summarise(
+    mean_rating = mean(value_num, na.rm=TRUE),
+    mean_rating_eligible = mean(value_num_eligible, na.rm=TRUE),
+    num_not_apply = sum(value_num == 1, na.rm=TRUE),
+    is_eligible = sum(is_MR_eligible, na.rm=TRUE) > 0
+  ) %>% 
+  group_by(criterion) %>% 
+  summarise(
+    perc_papers_apply1 = (sum(mean_rating >= 2.33, na.rm=TRUE)/n()) |> round(2),
+    perc_papers_apply2 = (sum(num_not_apply == 0, na.rm=TRUE)/n()) |> round(2),
+    perc_papers_apply1_eligible = (sum(mean_rating_eligible >= 2.33, na.rm=TRUE)/sum(is_eligible)) |> round(2),
+    perc_papers_apply2_eligible = (sum(num_not_apply == 0 & is_eligible, na.rm=TRUE)/sum(is_eligible)) |> round(2)
+  ) %>% 
+  ungroup()
+
+frequency2.tab <- frequency2 %>% as.data.frame() %>% regulartable() %>% autofit()
+frequency2.tab
+
+# Alternative 3: We simply show all ratings as frequencies, plus the average rating.
+frequency2 <- data_long_b %>% 
+  mutate(
+    value_num = as.numeric(value),
+    value_num_eligible = ifelse(is_MR_eligible, as.numeric(value), NA)
+  ) %>% 
+  group_by(criterion) %>% 
+  summarise(
+    cat1 = sum(value_num == 1, na.rm=TRUE),
+    cat2 = sum(value_num == 2, na.rm=TRUE),
+    cat3 = sum(value_num == 3, na.rm=TRUE),
+    cat_mean = mean(value_num, na.rm=TRUE) |> round(2),
+    cat1_eligible = sum(value_num == 1 & is_MR_eligible, na.rm=TRUE),
+    cat2_eligible = sum(value_num == 2 & is_MR_eligible, na.rm=TRUE),
+    cat3_eligible = sum(value_num == 3 & is_MR_eligible, na.rm=TRUE),
+    cat_eligible_mean = mean(value_num_eligible, na.rm=TRUE) |> round(2)
+  ) %>% 
+  ungroup()
+
+frequency2 <- frequency2[mixedorder(frequency2$criterion), ]
+
+# display as word table
+frequency2.tab <- frequency2 %>% as.data.frame() %>% regulartable() %>% autofit()
+frequency2.tab
+
+
 
 #21 compute ICC of part 2 of the sample
 res2 <- data.frame()
