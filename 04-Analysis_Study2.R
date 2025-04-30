@@ -516,4 +516,11 @@ data_time %>% count(R001)
 res1[,2:8] <- round(res1[, 2:8],2)
 res1
 
-# TODO: Compute ICC for "Overall Score of Methodology Criteria", but only for the 89 eligible papers.
+# Compute ICC for "Overall Score of Methodology Criteria", but only for the 72 eligible papers.
+
+data_wide_OS_M_eli <- data_long[data_long$criterion == "Overall_Score_Methods_Mean", ] %>% 
+    filter(paper %in% S2$paper_number[S2$is_MR_eligible]) %>%
+    pivot_wider(id_cols=c(paper), names_from=rater, values_from = value) %>% 
+    select(-paper) 
+  
+psych::ICC(data_wide_OS_M_eli, missing=FALSE)
